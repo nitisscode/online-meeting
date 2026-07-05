@@ -1,0 +1,3 @@
+-r base.txt
+
+# Add production-only dependencies here (e.g. sentry-sdk, whitenoise)

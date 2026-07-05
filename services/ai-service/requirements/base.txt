@@ -1,0 +1,6 @@
+# Phase 3 dependencies — install when building AI service
+# fastapi>=0.110
+# uvicorn>=0.27
+# openai-whisper
+# httpx
+# redis

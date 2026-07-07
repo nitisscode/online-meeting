@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     "core",
     "apps.users",
+    "apps.meetings",
 ]
 
 MIDDLEWARE = [
@@ -194,6 +195,11 @@ UNFOLD = {
                         "title": _("Groups"),
                         "icon": "group",
                         "link": reverse_lazy("admin:auth_group_changelist"),
+                    },
+                    {
+                        "title": _("Meetings"),
+                        "icon": "videocam",
+                        "link": reverse_lazy("admin:meetings_meeting_changelist"),
                     },
                 ],
             },

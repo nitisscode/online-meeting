@@ -1,6 +1,6 @@
 # Online Meeting Platform
 
-Production-grade AI meeting platform — polyglot microservices architecture.
+Production-grade AI meeting platform — Django-centric architecture with a separate AI service.
 
 ## Architecture
 
@@ -10,24 +10,21 @@ Production-grade AI meeting platform — polyglot microservices architecture.
                          ▼
                 API Gateway (Nginx)          ← Phase 4
                          │
-         ┌───────────────┴───────────────┐
-         │                               │
-         ▼                               ▼
-   Django Backend                 Go Signaling Server
- (REST, Auth, DB)               (WebSockets, WebRTC)   ← Phase 2
-         │                               │
-         ▼                               ▼
-   PostgreSQL                     STUN/TURN Server
-         │
-         ▼
-   Redis (Pub/Sub, Cache)
-         │
-         ▼
-   Celery Workers                         ← Phase 1 (Django)
-         │
-         ▼
-   AI Service (Python)                     ← Phase 3
-   Whisper · LLM · Summaries
+                         ▼
+                  Django Backend
+     (REST, Auth, DB, WebSocket signaling)
+                         │
+         ┌───────────────┼───────────────┐
+         ▼               ▼               ▼
+    PostgreSQL    Redis (Pub/Sub,    STUN/TURN Server
+                  Cache)             (WebRTC)
+                         │
+                         ▼
+                  Celery Workers
+                         │
+                         ▼
+               AI Service (Python)           ← Phase 3
+              Whisper · LLM · Summaries
 ```
 
 ## Project structure
@@ -35,14 +32,12 @@ Production-grade AI meeting platform — polyglot microservices architecture.
 ```
 online-meeting/
 ├── services/
-│   ├── django-backend/      # Phase 1 — REST APIs, auth, persistence
+│   ├── django-backend/        # REST APIs, auth, persistence, real-time signaling
 │   │   ├── core/              # Main Django app (settings, URLs)
-│   │   ├── apps/              # Domain apps (accounts, meetings, …)
+│   │   ├── apps/              # Domain apps (users, meetings, …)
+│   │   ├── templates/         # Email templates
 │   │   ├── manage.py
 │   │   └── requirements/
-│   ├── go-signaling/          # Phase 2 — WebSocket + WebRTC signaling
-│   │   ├── cmd/server/
-│   │   └── internal/
 │   └── ai-service/            # Phase 3 — Whisper, LLM, summaries
 │       └── app/
 ├── docker/
@@ -57,16 +52,16 @@ online-meeting/
 
 ## Build phases
 
-| Phase | Services | Command |
-|-------|----------|---------|
+| Phase | Scope | Command |
+|-------|-------|---------|
 | **1** | Django + PostgreSQL + Redis | `docker compose up` |
-| **2** | + Go signaling | `docker compose --profile phase2 up` |
+| **2** | Real-time signaling (WebSockets, WebRTC) inside Django | `docker compose up` |
 | **3** | + AI service | `docker compose --profile phase3 up` |
 | **4** | + Nginx gateway | `docker compose --profile phase4 up` |
 
-> Start with Phase 1 only. Add services incrementally — always keep a working system.
+> Start with Phase 1 only. Add features incrementally — always keep a working system.
 
-## Local setup (Phase 1)
+## Local setup
 
 ```bash
 cd online-meeting
@@ -86,7 +81,7 @@ python manage.py runserver
 API: `http://localhost:8000`  
 Admin: `http://localhost:8000/admin/`
 
-## Docker (Phase 1)
+## Docker
 
 ```bash
 copy .env.example .env
@@ -99,4 +94,4 @@ Follow the step-by-step roadmap in **[docs/DEVELOPMENT_GUIDE.md](docs/DEVELOPMEN
 
 ## Interview pitch
 
-> "The core business logic runs in Django — authentication, meeting metadata, and persistence. Real-time signaling is handled by a Go service for its concurrency model. AI transcription and summarization run as an independent Python service. Services communicate asynchronously through Redis and REST, containerized with Docker and deployed on AWS."
+> "The core business logic runs in Django — authentication, meeting metadata, persistence, and real-time WebSocket signaling for WebRTC. AI transcription and summarization run as an independent Python service. Services communicate asynchronously through Redis and REST, containerized with Docker and deployed on AWS."

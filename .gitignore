@@ -62,8 +62,3 @@ htmlcov/
 
 # Docker
 *.pid
-
-# Go
-services/go-signaling/signaling
-*.exe
-*.test

@@ -27,15 +27,15 @@ services:
       timeout: 5s
       retries: 5
 
-  # Phase 1 — Django core backend (REST, auth, persistence)
+  # Django backend (REST, auth, persistence, real-time, AI)
   django-backend:
-    build: ./services/django-backend
+    build: .
     command: >
       sh -c "python manage.py migrate &&
              python manage.py collectstatic --noinput &&
              gunicorn core.wsgi:application --bind 0.0.0.0:8000 --reload"
     volumes:
-      - ./services/django-backend:/app
+      - .:/app
     ports:
       - "8000:8000"
     env_file:
@@ -49,23 +49,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-
-  # Phase 3 — Python AI service (Whisper, LLM, summaries)
-  ai-service:
-    profiles: ["phase3"]
-    build: ./services/ai-service
-    ports:
-      - "8001:8001"
-    env_file:
-      - .env
-    environment:
-      REDIS_URL: redis://redis:6379/2
-      DJANGO_API_URL: http://django-backend:8000
-    depends_on:
-      redis:
-        condition: service_healthy
-      django-backend:
-        condition: service_started
 
   # Phase 4 — API gateway
   nginx:

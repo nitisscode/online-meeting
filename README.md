@@ -1,6 +1,6 @@
 # Online Meeting Platform
 
-Production-grade AI meeting platform — Django-centric architecture with a separate AI service.
+Production-grade AI meeting platform — a single Django project handling REST, real-time signaling, and AI.
 
 ## Architecture
 
@@ -12,41 +12,36 @@ Production-grade AI meeting platform — Django-centric architecture with a sepa
                          │
                          ▼
                   Django Backend
-     (REST, Auth, DB, WebSocket signaling)
+   (REST, Auth, DB, WebSocket signaling, AI)
                          │
          ┌───────────────┼───────────────┐
          ▼               ▼               ▼
     PostgreSQL    Redis (Pub/Sub,    STUN/TURN Server
-                  Cache)             (WebRTC)
+                  Cache, Broker)     (WebRTC)
                          │
                          ▼
                   Celery Workers
-                         │
-                         ▼
-               AI Service (Python)           ← Phase 3
-              Whisper · LLM · Summaries
+           (Whisper · LLM · Summaries)
 ```
 
 ## Project structure
 
 ```
 online-meeting/
-├── services/
-│   ├── django-backend/        # REST APIs, auth, persistence, real-time signaling
-│   │   ├── core/              # Main Django app (settings, URLs)
-│   │   ├── apps/              # Domain apps (users, meetings, …)
-│   │   ├── templates/         # Email templates
-│   │   ├── manage.py
-│   │   └── requirements/
-│   └── ai-service/            # Phase 3 — Whisper, LLM, summaries
-│       └── app/
+├── apps/                  # Domain apps
+│   ├── users/             # Custom user model, JWT auth
+│   ├── meetings/          # Meetings, participants, settings
+│   └── ai/                # Transcription, summaries (Phase 3)
+├── core/                  # Project config (settings, URLs, WSGI/ASGI)
+├── templates/             # Email templates
 ├── docker/
-│   └── nginx/                 # Phase 4 — API gateway config
-├── scripts/
-├── tests/
+│   └── nginx/             # Phase 4 — API gateway config
 ├── docs/
 │   └── DEVELOPMENT_GUIDE.md
+├── manage.py
+├── Dockerfile
 ├── docker-compose.yml
+├── requirements.txt
 └── .env.example
 ```
 
@@ -55,11 +50,11 @@ online-meeting/
 | Phase | Scope | Command |
 |-------|-------|---------|
 | **1** | Django + PostgreSQL + Redis | `docker compose up` |
-| **2** | Real-time signaling (WebSockets, WebRTC) inside Django | `docker compose up` |
-| **3** | + AI service | `docker compose --profile phase3 up` |
+| **2** | Real-time signaling (WebSockets, WebRTC) | `docker compose up` |
+| **3** | AI transcription and summaries (`apps/ai`) | `docker compose up` |
 | **4** | + Nginx gateway | `docker compose --profile phase4 up` |
 
-> Start with Phase 1 only. Add features incrementally — always keep a working system.
+> Add features incrementally — always keep a working system.
 
 ## Local setup
 
@@ -73,7 +68,6 @@ pip install -r requirements.txt
 copy .env.example .env
 docker compose up -d db redis
 
-cd services/django-backend
 python manage.py migrate
 python manage.py runserver
 ```
@@ -94,4 +88,4 @@ Follow the step-by-step roadmap in **[docs/DEVELOPMENT_GUIDE.md](docs/DEVELOPMEN
 
 ## Interview pitch
 
-> "The core business logic runs in Django — authentication, meeting metadata, persistence, and real-time WebSocket signaling for WebRTC. AI transcription and summarization run as an independent Python service. Services communicate asynchronously through Redis and REST, containerized with Docker and deployed on AWS."
+> "The platform runs as a single Django project — authentication, meeting metadata, persistence, real-time WebSocket signaling for WebRTC, and AI transcription and summarization. Long-running AI work runs in Celery workers over Redis. Everything is containerized with Docker and deployed on AWS."

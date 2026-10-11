@@ -6,14 +6,12 @@ from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-ROOT_DIR = BASE_DIR.parent.parent
 
 env = environ.Env(
     DJANGO_DEBUG=(bool, False),
     PBKDF2_ITERATIONS=(int, 390000),
 )
 
-environ.Env.read_env(ROOT_DIR / ".env")
 environ.Env.read_env(BASE_DIR / ".env")
 
 SECRET_KEY = env("DJANGO_SECRET_KEY")
@@ -42,6 +40,7 @@ INSTALLED_APPS = [
     "core",
     "apps.users",
     "apps.meetings",
+    "apps.ai",
 ]
 
 MIDDLEWARE = [

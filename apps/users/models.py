@@ -1,7 +1,14 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
+from django.utils import timezone
 
 from core.models import CoreModel
+from .hashers import get_otp_expiry_time, hash_otp
+
+class OTPPurpose(models.IntegerChoices):
+    LOGIN = 0
+    EMAIL_VERIFICATION = 1
+    PASSWORD_RESET = 2
 
 
 class UserManager(BaseUserManager):
@@ -60,3 +67,29 @@ class User(CoreModel, AbstractBaseUser, PermissionsMixin):
     def full_name(self) -> str:
         name = f"{self.first_name} {self.last_name}".strip()
         return name or self.email
+
+
+class OTPAuthentication(CoreModel):
+    email = models.EmailField(db_index=True)
+    hashed_otp = models.CharField(max_length=64)
+    expires_at = models.DateTimeField(default=get_otp_expiry_time)
+    purpose = models.IntegerField(choices=OTPPurpose.choices)
+    is_used = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = "OTP authentication"
+        verbose_name_plural = "OTP authentications"
+
+        indexes = [
+            models.Index(fields=["email", "purpose"]),
+        ]
+
+    def __str__(self) -> str:
+        return self.email
+
+    def is_expired(self) -> bool:
+        return self.expires_at < timezone.now()
+
+    def mark_as_used(self):
+        self.is_used = True
+        self.save(update_fields=["is_used"])

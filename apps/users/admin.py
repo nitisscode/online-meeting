@@ -4,7 +4,7 @@ from unfold.admin import ModelAdmin
 from unfold.forms import AdminPasswordChangeForm
 
 from apps.users.forms import CustomUserChangeForm, CustomUserCreationForm
-from apps.users.models import User
+from apps.users.models import User, OTPAuthentication
 
 
 @admin.register(User)
@@ -48,3 +48,22 @@ class UserAdmin(BaseUserAdmin, ModelAdmin):
             },
         ),
     )
+
+
+@admin.register(OTPAuthentication)
+class OTPAuthenticationAdmin(ModelAdmin):
+    list_display = ("email", "purpose", "is_used", "expired", "expires_at", "created_at")
+    list_filter = ("purpose", "is_used", "created_at")
+    search_fields = ("email",)
+    ordering = ("-created_at",)
+    date_hierarchy = "created_at"
+
+    @admin.display(description="Expired", boolean=True)
+    def expired(self, obj):
+        return obj.is_expired()
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False

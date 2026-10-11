@@ -6,7 +6,7 @@ from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from apps.users.models import User
-
+from apps.users.models import OTPPurpose
 
 class UserResponseSerializer(serializers.ModelSerializer):
     class Meta:
@@ -85,6 +85,17 @@ class UserLoginSerializer(TokenObtainPairSerializer):
       token["email"] = user.email
       token["username"] = user.username
       return token
+
+
+class OTPAuthenticationSerializer(serializers.Serializer):
+   email = serializers.EmailField(required=True)
+   purpose = serializers.ChoiceField(choices=OTPPurpose.choices, required=True)
+
+
+class OTPVerifySerializer(serializers.Serializer):
+   email = serializers.EmailField(required=True)
+   purpose = serializers.ChoiceField(choices=OTPPurpose.choices, required=True)
+   otp = serializers.CharField(required=True, min_length=4, max_length=4)
 
 
 class MeSerializer(serializers.ModelSerializer):

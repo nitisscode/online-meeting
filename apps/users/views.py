@@ -15,7 +15,7 @@ from apps.users.serializers import (
 )
 from apps.users.models import OTPAuthentication, User, OTPPurpose
 from apps.users.hashers import generate_otp, get_otp_expiry_time, hash_otp, verify_otp
-
+from core.email_services.otp import send_otp_email
 class UserSignUpView(CreateAPIView):
    serializer_class = UserSignUpSerializer
    permission_classes = [AllowAny]
@@ -55,7 +55,7 @@ class RequestOTPView(CreateAPIView):
             hashed_otp=hashed_otp,
         )
 
-        #send_otp_email(email, otp)
+        send_otp_email(email, purpose, otp)
 
         return Response(
             {

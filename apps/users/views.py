@@ -41,9 +41,9 @@ class RequestOTPView(CreateAPIView):
         try:
             user = User.objects.get(email=email, is_active=True)
         except User.DoesNotExist:
-            return Response({"error": "User not found"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "User not found"}, status=status.HTTP_400_BAD_REQUEST)
         except User.MultipleObjectsReturned:
-            return Response({"error": "Multiple users found"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "Multiple users found"}, status=status.HTTP_400_BAD_REQUEST)
 
         otp = generate_otp()
         hashed_otp = hash_otp(otp, email, purpose)
@@ -54,8 +54,12 @@ class RequestOTPView(CreateAPIView):
             expires_at=get_otp_expiry_time(),
             hashed_otp=hashed_otp,
         )
-
-        send_otp_email(email, purpose, otp)
+         
+        try:
+            send_otp_email(email, purpose, otp)
+        except Exception:
+            otp_authentication.delete()
+            return Response({"detail": "Failed to send OTP"}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(
             {
@@ -82,7 +86,7 @@ class OTPAuthView(CreateAPIView):
       otp = serializer.validated_data["otp"]
 
       if purpose != OTPPurpose.LOGIN:
-         return Response({"error": "Invalid Request"}, status=status.HTTP_400_BAD_REQUEST)
+         return Response({"detail": "Invalid Request"}, status=status.HTTP_400_BAD_REQUEST)
 
 
       otp_auth = (
@@ -93,20 +97,20 @@ class OTPAuthView(CreateAPIView):
       )
 
       if otp_auth is None:
-         return Response({"error": "Invalid OTP"}, status=status.HTTP_400_BAD_REQUEST)
+         return Response({"detail": "Invalid OTP"}, status=status.HTTP_400_BAD_REQUEST)
 
       if otp_auth.is_expired():
-         return Response({"error": "OTP expired"}, status=status.HTTP_400_BAD_REQUEST)
+         return Response({"detail": "OTP expired"}, status=status.HTTP_400_BAD_REQUEST)
       
       is_valid = verify_otp(otp, email, purpose, otp_auth.hashed_otp)
 
       if not is_valid:
-         return Response({"error": "Invalid OTP"}, status=status.HTTP_400_BAD_REQUEST)
+         return Response({"detail": "Invalid OTP"}, status=status.HTTP_400_BAD_REQUEST)
 
       try:
          user = User.objects.get(email=email, is_active=True)
       except User.DoesNotExist:
-         return Response({"error": "User not found"}, status=status.HTTP_400_BAD_REQUEST)
+         return Response({"detail": "User not found"}, status=status.HTTP_400_BAD_REQUEST)
 
       otp_auth.mark_as_used()
 

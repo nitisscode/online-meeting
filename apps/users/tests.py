@@ -92,7 +92,7 @@ class OTPLoginTests(APITestCase):
       response = self.verify_otp(wrong_otp)
 
       self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-      self.assertEqual(response.data["error"], "Invalid OTP")
+      self.assertEqual(response.data["detail"], "Invalid OTP")
 
    def test_expired_otp_rejected(self):
       otp = self.request_otp()
@@ -103,7 +103,7 @@ class OTPLoginTests(APITestCase):
       response = self.verify_otp(otp)
 
       self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-      self.assertEqual(response.data["error"], "OTP expired")
+      self.assertEqual(response.data["detail"], "OTP expired")
 
    def test_only_latest_otp_is_valid(self):
       first_otp = self.request_otp()

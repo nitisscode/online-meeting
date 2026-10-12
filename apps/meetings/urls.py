@@ -7,7 +7,7 @@ from .views import MeetingViewSet, MeetingParticipantViewSet
 
 router = DefaultRouter()
 router.register(r'', MeetingViewSet, basename='meeting')
-router.register(r'meeting-participants', MeetingParticipantViewSet, basename='meeting-participant')
+router.register(r'participants', MeetingParticipantViewSet, basename='meeting-participant')
 
 
 urlpatterns = [] + router.urls

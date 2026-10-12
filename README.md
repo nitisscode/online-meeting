@@ -82,6 +82,10 @@ copy .env.example .env
 docker compose up --build
 ```
 
+## API reference
+
+Endpoints, request bodies and responses: **[docs/API.md](docs/API.md)**.
+
 ## Development guide
 
 Follow the step-by-step roadmap in **[docs/DEVELOPMENT_GUIDE.md](docs/DEVELOPMENT_GUIDE.md)**.

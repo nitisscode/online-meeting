@@ -11,7 +11,9 @@ from apps.users.serializers import (
    UserSignUpSerializer, 
    UserLoginSerializer,
    OTPAuthenticationSerializer,
-   OTPVerifySerializer
+   OTPVerifySerializer,
+   ForgotPasswordSerializer,
+   ResetPasswordSerializer
 )
 from apps.users.models import OTPAuthentication, User, OTPPurpose
 from apps.users.hashers import generate_otp, get_otp_expiry_time, hash_otp, verify_otp
@@ -128,8 +130,85 @@ class OTPAuthView(CreateAPIView):
       )
 
 
+class ForgotPasswordView(CreateAPIView):
+   serializer_class = ForgotPasswordSerializer
+   permission_classes = [AllowAny]
+
+   def create(self, request, *args, **kwargs):
+      serializer = self.get_serializer(data=request.data)
+      serializer.is_valid(raise_exception=True)
+      email = serializer.validated_data["email"]
+
+      try:
+         user = User.objects.get(email=email, is_active=True)
+      except User.DoesNotExist:
+         return Response({"detail": "No user found with this email"}, status=status.HTTP_400_BAD_REQUEST)
+
+      otp = generate_otp()
+      hashed_otp = hash_otp(otp, email, OTPPurpose.PASSWORD_RESET)
+
+      otp_authentication = OTPAuthentication.objects.create(
+         email=email,
+         purpose=OTPPurpose.PASSWORD_RESET,
+         hashed_otp=hashed_otp,
+      )
+
+      try:
+         send_otp_email(email, OTPPurpose.PASSWORD_RESET, otp)
+      except Exception:
+         return Response({"detail": "Failed to send OTP"}, status=status.HTTP_400_BAD_REQUEST)
 
 
+      return Response({"detail": "OTP sent to email"}, status=status.HTTP_200_OK)
+
+class ResetPasswordView(CreateAPIView):
+   serializer_class = ResetPasswordSerializer
+   permission_classes = [AllowAny]
+
+   def create(self, request, *args, **kwargs):
+      serializer = self.get_serializer(data=request.data)
+      serializer.is_valid(raise_exception=True)
+
+      email = serializer.validated_data["email"]
+      purpose = serializer.validated_data["purpose"]
+      otp = serializer.validated_data["otp"]
+      new_password = serializer.validated_data["new_password"]
+
+      if purpose != OTPPurpose.PASSWORD_RESET:
+         return Response({"detail": "Invalid Request"}, status=status.HTTP_400_BAD_REQUEST)
+
+      otp_auth = (
+         OTPAuthentication.objects.filter(email=email, purpose=purpose, is_used=False)
+         .order_by("-created_at")
+         .first()
+      )
+
+      if otp_auth is None:
+         return Response({"detail": "Invalid OTP"}, status=status.HTTP_400_BAD_REQUEST)
+
+      if otp_auth.is_expired():
+         return Response({"detail": "OTP expired"}, status=status.HTTP_400_BAD_REQUEST)
+
+      is_valid = verify_otp(otp, email, purpose, otp_auth.hashed_otp)
+
+      if not is_valid:
+         return Response({"detail": "Invalid OTP"}, status=status.HTTP_400_BAD_REQUEST)
+
+      try:
+         user = User.objects.get(email=email, is_active=True)
+      except User.DoesNotExist:
+         return Response({"detail": "User not found"}, status=status.HTTP_400_BAD_REQUEST)
+
+      user.set_password(new_password)
+      user.save(update_fields=["password"])
+      otp_auth.mark_as_used()
+
+      return Response({"detail": "Password reset successfully"}, status=status.HTTP_200_OK)
+
+
+
+
+      
 class MeAPIView(RetrieveAPIView):
    serializer_class = MeSerializer
 

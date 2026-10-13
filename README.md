@@ -31,7 +31,8 @@ online-meeting/
 ├── apps/                  # Domain apps
 │   ├── users/             # Custom user model, JWT auth
 │   ├── meetings/          # Meetings, participants, settings
-│   └── ai/                # Transcription, summaries (Phase 3)
+│   ├── ai/                # Transcription, summaries (Phase 3)
+│   └── chat/              # In-meeting chat
 ├── core/                  # Project config (settings, URLs, WSGI/ASGI)
 ├── templates/             # Email templates
 ├── docker/

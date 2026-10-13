@@ -103,3 +103,20 @@ class MeSerializer(serializers.ModelSerializer):
       model = User
       fields = ["id", "username", "email", "first_name", "last_name"]
       read_only_fields = fields
+
+
+class ForgotPasswordSerializer(serializers.Serializer):
+   email = serializers.EmailField(required=True)
+
+class ResetPasswordSerializer(serializers.Serializer):
+   email = serializers.EmailField(required=True)
+   purpose = serializers.ChoiceField(choices=OTPPurpose.choices, required=True)
+   otp = serializers.CharField(required=True, min_length=4, max_length=4)
+   new_password = serializers.CharField(required=True, write_only=True)
+   confirm_password = serializers.CharField(required=True, write_only=True)
+
+   def validate(self, attrs):
+      if attrs.get("new_password") != attrs.get("confirm_password"):
+         raise serializers.ValidationError({"detail": "Passwords do not match."})
+      
+      return attrs

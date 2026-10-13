@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "apps.users",
     "apps.meetings",
     "apps.ai",
+    "apps.chat",
 ]
 
 MIDDLEWARE = [

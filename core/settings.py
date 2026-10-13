@@ -210,6 +210,11 @@ UNFOLD = {
                         "icon": "videocam",
                         "link": reverse_lazy("admin:meetings_meeting_changelist"),
                     },
+                    {
+                        "title": _("Chat"),
+                        "icon": "chat",
+                        "link": reverse_lazy("admin:chat_conversation_changelist"),
+                    },
                 ],
             },
         ],

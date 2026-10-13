@@ -187,6 +187,7 @@ class MeetingRoomSerializer(serializers.ModelSerializer):
          'title',
          'meeting_code',
          'status',
+         'started_at',
          'settings',
          'participants',
       ]

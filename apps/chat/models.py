@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 from core.models import CoreModel
 from apps.users.models import User
@@ -50,3 +51,11 @@ class Message(CoreModel):
 
    def __str__(self):
       return f"Message from {self.sender.first_name} to {self.conversation.meeting.title}"
+
+
+   def update_edited(self):
+      self.is_edited = True
+      self.edited_at = timezone.now()
+      self.save()
+
+

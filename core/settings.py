@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     "unfold",
     "unfold.contrib.filters",
     "unfold.contrib.forms",
+    #"daphne",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -41,6 +42,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
+    "channels",
     "core",
     "apps.users",
     "apps.meetings",
@@ -95,6 +97,13 @@ CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.redis.RedisCache",
         "LOCATION": env("REDIS_URL"),
+    }
+}
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG":{"hosts": [env("REDIS_URL")]},
     }
 }
 

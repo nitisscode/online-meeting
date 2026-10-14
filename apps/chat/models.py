@@ -58,4 +58,9 @@ class Message(CoreModel):
       self.edited_at = timezone.now()
       self.save()
 
+   def soft_delete(self):
+      self.modified_at = timezone.now()
+      self.is_deleted = True
+      self.save()
+
 

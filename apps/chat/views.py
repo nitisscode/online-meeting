@@ -43,4 +43,7 @@ class MessageViewSet(ModelViewSet):
    
    def perform_update(self, serializer):
       serializer.instance.update_edited()
+
+   def perform_destroy(self, instance):
+      instance.soft_delete()
       

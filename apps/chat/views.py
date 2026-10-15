@@ -6,12 +6,14 @@ from rest_framework import status
 from .models import Conversation, ConversationParticipant, Message
 from .serializers import ConversationSerializer, ConversationParticipantSerializer, MessageSerializer
 from .permissions import IsConversationParticipant, IsMessageSenderOrReadOnly
+from .services import ConversationService
 
 class ConversationViewSet(ModelViewSet):
    serializer_class = ConversationSerializer
 
    def get_queryset(self):
-      return Conversation.objects.all()
+      
+      return ConversationService.get_conversation(self.kwargs['meeting_id'])
 
 
 

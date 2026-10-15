@@ -31,7 +31,7 @@ INSTALLED_APPS = [
     "unfold",
     "unfold.contrib.filters",
     "unfold.contrib.forms",
-    #"daphne",
+    "daphne",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "apps.meetings",
     "apps.ai",
     "apps.chat",
+    "apps.constants",
 ]
 
 MIDDLEWARE = [

@@ -3,6 +3,7 @@ from urllib.parse import parse_qs
 from channels.db import database_sync_to_async
 
 from django.contrib.auth.models import AnonymousUser
+from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 
@@ -30,6 +31,5 @@ class JWTAuthMiddleware:
          token = self.authenticator.get_validated_token(token)
          return self.authenticator.get_user(token), token["exp"]
 
-      except Exception as e:
-         print(e)
+      except AuthenticationFailed:
          return AnonymousUser(), None

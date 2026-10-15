@@ -3,6 +3,8 @@ from rest_framework.exceptions import NotFound, PermissionDenied
 from django.db import transaction
 from django.utils import timezone
 
+from apps.chat.models import Conversation, ConversationType
+from apps.chat.services import ConversationService
 from apps.users.models import User
 from apps.users.serializers import UserResponseSerializer
 from .models import Meeting, MeetingParticipant, MeetingSettings
@@ -227,7 +229,9 @@ class JoinMeetingSerializer(serializers.Serializer):
             "left_at": None,
          },
       )
-      return meeting
+      conversation = ConversationService.create_conversation_and_participant(meeting.id, user)
+      
+      return conversation
 
    def to_representation(self, instance):
       return MeetingRoomSerializer(instance).data

@@ -1,0 +1,12 @@
+
+
+
+class ChatOperations:
+   MESSAGE_RECEIVED = 0
+   MESSAGE_SENT = 1
+   MESSAGE_EDITED = 2
+   MESSAGE_DELETED = 3
+   MESSAGE_MARKED_AS_READ = 4
+   MESSAGE_TYPING = 5
+   ERROR = 99
+

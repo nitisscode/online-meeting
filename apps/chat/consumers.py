@@ -1,6 +1,9 @@
 import asyncio
 import time
+import json
+from django.core.serializers.json import DjangoJSONEncoder
 
+from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from rest_framework.exceptions import APIException
 from apps.chat.handlers.messages import MessageHandler
@@ -22,7 +25,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
          await self.close(code=WSStatusCodes.UNAUTHORIZED, reason="Unauthorized")
          return
 
-      if not await MessageService.is_member(self.conversation_id, self.user):
+      if not await database_sync_to_async(MessageService.is_member)(self.conversation_id, self.user):
          await self.close(code=WSStatusCodes.FORBIDDEN, reason="You are not a member of this conversation")
          return
 
@@ -32,10 +35,13 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
       )
       
       self.joined = True
-      await self.expire_token()
+      self.expiry_task = asyncio.create_task(self.expire_token())
 
    async def disconnect(self, close_code):
-      if hasattr(self, "group_name"):
+      if getattr(self, "expiry_task", None):
+         self.expiry_task.cancel()
+      
+      if self.joined:
          await self.channel_layer.group_discard(
             self.group_name,
             self.channel_name,
@@ -71,7 +77,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
          self.group_name,
          {
             "type": "group.event",
-            "payload": payload,
+            "payload": json.dumps(payload, cls=DjangoJSONEncoder),
             "sender_channel": self.channel_name if exclude_self else None,
          }
       )
@@ -89,7 +95,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
    async def group_event(self, event):
       if event["sender_channel"] != self.channel_name:
-         await self.send_json(event["payload"])
+         await self.send(text_data=event["payload"])
       
 
   

@@ -49,7 +49,7 @@ class MessageHandler:
          **data,
       )
 
-      await self.consumer.broadcast({"op": ChatOperations.MESSAGE_RECEIVED, "data": message})
+      await self.consumer.broadcast({"op": ChatOperations.MESSAGE_RECEIVED, "data": message}, exclude_self=True)
 
 
    async def edit_message(self):

@@ -56,6 +56,19 @@ class MessageService:
 
       return True
 
+   @staticmethod
+   def chat_history(conversation_id, user):
+      if not MessageService.is_member(conversation_id, user):
+         raise PermissionDenied("You are not a member of this conversation.")
+      
+      messages = (Message.objects.filter(
+         conversation_id=conversation_id, is_deleted=False
+         ).select_related("sender")
+         .order_by("created_at")
+      )
+      
+      return MessageSerializer(messages, many=True).data
+
 
    @staticmethod
    def verify_message_and_owner(conversation_id, message_id, user):

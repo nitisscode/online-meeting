@@ -182,6 +182,8 @@ class MeetingRoomSerializer(serializers.ModelSerializer):
    participants = MeetingParticipantsListSerializer(
       source='connected_participants', read_only=True, many=True
    )
+   conversation_id = serializers.SerializerMethodField()
+
    class Meta:
       model = Meeting
       fields = [
@@ -190,10 +192,20 @@ class MeetingRoomSerializer(serializers.ModelSerializer):
          'meeting_code',
          'status',
          'started_at',
+         'conversation_id',
          'settings',
          'participants',
       ]
       read_only_fields = fields
+
+   def get_conversation_id(self, meeting):
+      try:
+         conversation = meeting.conversation
+      except Conversation.DoesNotExist:
+         return None
+      if conversation.is_deleted or not conversation.is_active:
+         return None
+      return conversation.id
 
 
 class JoinMeetingSerializer(serializers.Serializer):
@@ -231,7 +243,7 @@ class JoinMeetingSerializer(serializers.Serializer):
       )
       conversation = ConversationService.create_conversation_and_participant(meeting.id, user)
       
-      return conversation
+      return meeting
 
    def to_representation(self, instance):
       return MeetingRoomSerializer(instance).data

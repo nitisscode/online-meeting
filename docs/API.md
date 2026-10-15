@@ -4,6 +4,8 @@ Base URL (local): `http://127.0.0.1:8000`
 
 All request and response bodies are JSON. Send `Content-Type: application/json`.
 
+Real-time chat over WebSocket is documented separately in [WEBSOCKET_CHAT.md](WEBSOCKET_CHAT.md).
+
 ## Authentication
 
 Protected endpoints require a JWT access token:

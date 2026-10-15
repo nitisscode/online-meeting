@@ -52,3 +52,4 @@ class MarkAsReadSerializer(serializers.Serializer):
 
 class TypingSerializer(serializers.Serializer):
    is_typing = serializers.BooleanField()
+

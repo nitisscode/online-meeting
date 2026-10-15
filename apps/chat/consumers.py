@@ -37,6 +37,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
       self.joined = True
       self.expiry_task = asyncio.create_task(self.expire_token())
 
+      await MessageHandler(self, {}).chat_history()
+
    async def disconnect(self, close_code):
       if getattr(self, "expiry_task", None):
          self.expiry_task.cancel()
@@ -77,7 +79,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
          self.group_name,
          {
             "type": "group.event",
-            "payload": json.dumps(payload, cls=DjangoJSONEncoder),
+            "payload": await self.encode_json(payload),
             "sender_channel": self.channel_name if exclude_self else None,
          }
       )
@@ -98,5 +100,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
          await self.send(text_data=event["payload"])
       
 
-  
+   async def encode_json(self, content):
+      return json.dumps(content, cls=DjangoJSONEncoder)
+
 

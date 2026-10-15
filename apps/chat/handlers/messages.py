@@ -19,13 +19,13 @@ class MessageHandler:
 
    async def handle(self):
       match self.op:
-         case ChatOperations.MESSAGE_SENT:
+         case ChatOperations.MESSAGE_SEND:
             return await self.send_message()
          
-         case ChatOperations.MESSAGE_EDITED:
+         case ChatOperations.MESSAGE_EDIT:
             return await self.edit_message()
          
-         case ChatOperations.MESSAGE_DELETED:
+         case ChatOperations.MESSAGE_DELETE:
             return await self.delete_message()
          
          case ChatOperations.MESSAGE_TYPING:
@@ -49,7 +49,7 @@ class MessageHandler:
          **data,
       )
 
-      await self.consumer.broadcast({"op": ChatOperations.MESSAGE_RECEIVED, "data": message}, exclude_self=True)
+      await self.consumer.broadcast({"op": ChatOperations.MESSAGE_RECEIVE, "data": message}, exclude_self=True)
 
 
    async def edit_message(self):
@@ -61,7 +61,7 @@ class MessageHandler:
          **data,
       )
 
-      await self.consumer.broadcast({"op": ChatOperations.MESSAGE_EDITED, "data": message})
+      await self.consumer.broadcast({"op": ChatOperations.MESSAGE_EDIT, "data": message})
 
    async def delete_message(self):
       data = await self.validate(DeleteMessageSerializer)
@@ -74,7 +74,7 @@ class MessageHandler:
 
       await self.consumer.broadcast(
          {
-            "op": ChatOperations.MESSAGE_DELETED, 
+            "op": ChatOperations.MESSAGE_DELETE, 
             "data": data,
          }
       )

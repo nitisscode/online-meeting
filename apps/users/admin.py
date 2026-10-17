@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from unfold.admin import ModelAdmin
 from unfold.forms import AdminPasswordChangeForm
+from unfold.decorators import action
 
 from apps.users.forms import CustomUserChangeForm, CustomUserCreationForm
 from apps.users.models import User, OTPAuthentication
@@ -12,6 +13,11 @@ class UserAdmin(BaseUserAdmin, ModelAdmin):
     form = CustomUserChangeForm
     add_form = CustomUserCreationForm
     change_password_form = AdminPasswordChangeForm
+
+    actions_detail = ["reset_password"]
+    @action(description="Reset password", icon="lock_reset")
+    def reset_password(self, request, object_id):
+        return redirect(reverse("admin:users_user_password_change", args=[object_id]))
 
     list_display = ("username", "email", "first_name", "last_name", "is_staff", "is_active", "created_at")
     list_filter = ("is_staff", "is_superuser", "is_active", "is_deleted")
